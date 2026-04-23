@@ -669,6 +669,14 @@
         <label>Priorität</label>
         <select id="c-prio"><option>Hoch</option><option>Mittel</option><option>Niedrig</option></select>
       </div>
+      <div class="form-group">
+        <label>Kanban-Status</label>
+        <select id="c-kanban">
+          <option value="todo">📋 To Do</option>
+          <option value="doing">⚡ Doing</option>
+          <option value="done">✅ Done</option>
+        </select>
+      </div>
       <div class="form-group full">
         <label>Notiz</label>
         <textarea id="c-notiz" placeholder="Zusätzliche Infos…"></textarea>
@@ -1079,16 +1087,18 @@ function saveCheck() {
   const text = document.getElementById('c-text').value.trim();
   if(!text) { alert('Bitte Aufgabe eingeben.'); return; }
   const editId = document.getElementById('check-edit-id').value;
+  const kanban = document.getElementById('c-kanban').value;
   const obj = {
     id: editId || uid(),
     text, kat: document.getElementById('c-kat').value,
     prio: document.getElementById('c-prio').value,
-    notiz: document.getElementById('c-notiz').value.trim(),
-    done: false
+    kanban,
+    done: kanban === 'done',
+    notiz: document.getElementById('c-notiz').value.trim()
   };
   if(editId) {
     const i = data.checks.findIndex(c=>c.id===editId);
-    if(i>-1) { obj.done = data.checks[i].done; data.checks[i] = obj; }
+    if(i>-1) data.checks[i] = obj;
   } else {
     data.checks.push(obj);
   }
@@ -1102,6 +1112,7 @@ function editCheck(id) {
   document.getElementById('c-text').value = c.text;
   document.getElementById('c-kat').value = c.kat;
   document.getElementById('c-prio').value = c.prio;
+  document.getElementById('c-kanban').value = c.kanban || (c.done ? 'done' : 'todo');
   document.getElementById('c-notiz').value = c.notiz || '';
   openModal('check-modal');
 }
@@ -1114,7 +1125,16 @@ function clearCheckForm() {
 
 function toggleCheck(id) {
   const c = data.checks.find(x=>x.id===id); if(!c) return;
-  c.done = !c.done; save(); renderChecks();
+  c.done = !c.done;
+  c.kanban = c.done ? 'done' : (c.kanban === 'done' ? 'todo' : c.kanban || 'todo');
+  save(); renderChecks();
+}
+
+function setKanbanStatus(id, status) {
+  const c = data.checks.find(x=>x.id===id); if(!c) return;
+  c.kanban = status;
+  c.done = status === 'done';
+  save(); renderChecks();
 }
 
 function deleteCheck(id) {
@@ -1140,6 +1160,12 @@ function renderCheckList(el) {
   const groups = {};
   data.checks.forEach(c => { if(!groups[c.kat]) groups[c.kat]=[]; groups[c.kat].push(c); });
   const prioClass = p => ({ Hoch:'prio-hoch', Mittel:'prio-mittel', Niedrig:'prio-niedrig' }[p]);
+  const kanbanBadge = c => {
+    const st = c.kanban || (c.done ? 'done' : 'todo');
+    const map = { todo:['📋 To Do','#e53935','#fff5f5'], doing:['⚡ Doing','#f57c00','#fffbf0'], done:['✅ Done','#388e3c','#f5fff7'] };
+    const [label,color,bg] = map[st]||map.todo;
+    return `<span style="font-size:0.72rem;font-weight:600;padding:2px 8px;border-radius:10px;background:${bg};color:${color};border:1px solid ${color}30">${label}</span>`;
+  };
   el.innerHTML = Object.keys(groups).map(kat => `
     <div class="checklist-group">
       <h4>${kat} <span class="tag">${groups[kat].filter(c=>c.done).length}/${groups[kat].length}</span></h4>
@@ -1150,6 +1176,7 @@ function renderCheckList(el) {
             <div>${c.text}</div>
             ${c.notiz ? `<div style="font-size:0.8rem;color:var(--text2);margin-top:3px">${c.notiz}</div>` : ''}
           </div>
+          ${kanbanBadge(c)}
           <span class="check-prio ${prioClass(c.prio)}">${c.prio}</span>
           <button class="btn btn-ghost btn-sm" onclick="editCheck('${c.id}')">✏️</button>
           <button class="btn btn-danger" onclick="deleteCheck('${c.id}')">🗑</button>
@@ -1161,37 +1188,45 @@ function renderCheckList(el) {
 
 function renderKanban(el) {
   const prioClass = p => ({ Hoch:'prio-hoch', Mittel:'prio-mittel', Niedrig:'prio-niedrig' }[p]);
+  const getStatus = c => c.kanban || (c.done ? 'done' : 'todo');
   const cols = [
-    { key:'offen',  label:'📋 Offen',      items: data.checks.filter(c=>!c.done) },
-    { key:'erledigt', label:'✅ Erledigt',  items: data.checks.filter(c=>c.done) }
+    { key:'todo',  label:'📋 To Do',  color:'#e53935', bg:'#fff5f5', border:'#ffcdd2', count: data.checks.filter(c=>getStatus(c)==='todo').length },
+    { key:'doing', label:'⚡ Doing',   color:'#f57c00', bg:'#fffbf0', border:'#ffe0b2', count: data.checks.filter(c=>getStatus(c)==='doing').length },
+    { key:'done',  label:'✅ Done',    color:'#388e3c', bg:'#f5fff7', border:'#c8e6c9', count: data.checks.filter(c=>getStatus(c)==='done').length },
   ];
-  // Group open items by category for richer kanban
-  const kats = [...new Set(data.checks.map(c=>c.kat))];
-  const kanbanCols = kats.map(kat => ({
-    label: kat,
-    open: data.checks.filter(c=>c.kat===kat&&!c.done),
-    done: data.checks.filter(c=>c.kat===kat&&c.done)
-  }));
-  el.innerHTML = `<div class="kanban-board">` + kanbanCols.map(col => `
-    <div class="kanban-col">
-      <div class="kanban-col-title">
-        <span>${col.label}</span>
-        <span class="tag">${col.done.length}/${col.open.length+col.done.length}</span>
-      </div>
-      ${[...col.open,...col.done].map(c=>`
-        <div class="kanban-card ${c.done?'done-card':''}" onclick="toggleCheck('${c.id}')">
-          <div class="kc-title ${c.done?'done-text':''}">${c.text}</div>
-          ${c.notiz?`<div style="font-size:0.78rem;color:var(--text2);margin-bottom:6px">${c.notiz}</div>`:''}
-          <div class="kc-meta">
-            <span class="check-prio ${prioClass(c.prio)}">${c.prio}</span>
-            <button class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:0.75rem" onclick="event.stopPropagation();editCheck('${c.id}')">✏️</button>
-            <button class="btn btn-danger" style="padding:2px 8px;font-size:0.75rem" onclick="event.stopPropagation();deleteCheck('${c.id}')">🗑</button>
+  const card = c => {
+    const st = getStatus(c);
+    const others = cols.filter(col=>col.key!==st);
+    return `
+      <div class="kanban-card" style="border-left:3px solid ${cols.find(col=>col.key===st).color}">
+        <div class="kc-title">${c.text}</div>
+        ${c.kat ? `<div style="font-size:0.72rem;color:var(--text2);margin-bottom:4px">📁 ${c.kat}</div>` : ''}
+        ${c.notiz ? `<div style="font-size:0.78rem;color:var(--text2);margin-bottom:6px">${c.notiz}</div>` : ''}
+        <div class="kc-meta">
+          <span class="check-prio ${prioClass(c.prio)}">${c.prio}</span>
+          <div style="margin-left:auto;display:flex;gap:4px">
+            ${others.map(o=>`<button title="→ ${o.label}" onclick="event.stopPropagation();setKanbanStatus('${c.id}','${o.key}')"
+              style="padding:2px 7px;border:1px solid ${o.color};background:${o.bg};color:${o.color};border-radius:5px;cursor:pointer;font-size:0.7rem;font-weight:600;font-family:inherit">
+              → ${o.key==='todo'?'To Do':o.key==='doing'?'Doing':'Done'}</button>`).join('')}
+            <button onclick="event.stopPropagation();editCheck('${c.id}')" style="padding:2px 7px;border:1.5px solid var(--border);background:var(--surface);border-radius:5px;cursor:pointer;font-size:0.78rem;font-family:inherit">✏️</button>
+            <button onclick="event.stopPropagation();deleteCheck('${c.id}')" style="padding:2px 7px;border:1.5px solid var(--danger);color:var(--danger);background:transparent;border-radius:5px;cursor:pointer;font-size:0.78rem;font-family:inherit">🗑</button>
           </div>
         </div>
-      `).join('')}
-      ${col.open.length===0&&col.done.length>0?'<div style="text-align:center;font-size:0.8rem;color:var(--accent2);padding:8px">Alles erledigt 🎉</div>':''}
-    </div>
-  `).join('') + `</div>`;
+      </div>`;
+  };
+
+  el.innerHTML = `<div class="kanban-board" style="grid-template-columns:repeat(3,1fr)">` +
+    cols.map(col => {
+      const items = data.checks.filter(c => getStatus(c) === col.key);
+      return `
+        <div class="kanban-col" style="background:${col.bg};border-color:${col.border}">
+          <div class="kanban-col-title" style="color:${col.color}">
+            <span>${col.label}</span>
+            <span style="background:${col.border};color:${col.color};padding:2px 8px;border-radius:10px;font-size:0.75rem">${items.length}</span>
+          </div>
+          ${items.length ? items.map(c=>card(c)).join('') : `<div style="text-align:center;padding:24px 12px;color:#aaa;font-size:0.85rem">${col.key==='done'?'Noch nichts erledigt 😴':'Keine Aufgaben hier'}</div>`}
+        </div>`;
+    }).join('') + `</div>`;
 }
 
 // ===== TERMINE =====
