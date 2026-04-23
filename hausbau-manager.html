@@ -1290,7 +1290,11 @@ function editTermin(id) {
 function renderTermine() {
   if(terminView==='gantt') { renderGantt(); return; }
   const today = new Date().toISOString().slice(0,10);
-  const sorted = [...data.termine].sort((a,b) => a.datum.localeCompare(b.datum));
+  const sorted = [...data.termine].sort((a,b) => {
+    const da = a.datum + 'T' + (a.uhrzeit || '00:00');
+    const db = b.datum + 'T' + (b.uhrzeit || '00:00');
+    return da.localeCompare(db);
+  });
   const el = document.getElementById('timeline-list');
   if(!sorted.length) {
     el.innerHTML = `<div class="empty-state"><div class="empty-icon">📅</div><p>Noch keine Termine eingetragen.</p></div>`;
