@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏠 Hausbau-Manager</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #f5f0e8;
+    --surface: #fffdf8;
+    --surface2: #f0ebe0;
+    --border: #d4c9b0;
+    --accent: #c17f3a;
+    --accent2: #4a7c59;
+    --accent3: #8b4a6b;
+    --accent4: #3a6b8b;
+    --text: #2a2318;
+    --text2: #6b5e4a;
+    --danger: #c0392b;
+    --shadow: 0 2px 12px rgba(42,35,24,0.10);
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--text);
+    color: var(--bg);
+    padding: 28px 40px 22px;
+    display: flex;
+    align-items: flex-end;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.2rem;
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+  header .subtitle {
+    color: #b0a890;
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+  }
+
+  nav {
+    background: var(--surface);
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    padding: 0 24px;
+  }
+  nav button {
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    padding: 16px 22px 13px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.93rem;
+    font-weight: 500;
+    color: var(--text2);
+    white-space: nowrap;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  nav button:hover { color: var(--accent); }
+  nav button.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ===== CARDS ===== */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+  }
+  .card h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.15rem;
+    margin-bottom: 14px;
+    color: var(--text);
+  }
+
+  /* ===== FORMS ===== */
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 0.8rem; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
+  input, textarea, select {
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.93rem;
+    color: var(--text);
+    transition: border 0.2s;
+  }
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  textarea { resize: vertical; min-height: 70px; }
+
+  /* ===== BUTTONS ===== */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.18s;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #a56830; transform: translateY(-1px); }
+  .btn-success { background: var(--accent2); color: white; }
+  .btn-success:hover { background: #3a6447; }
+  .btn-danger { background: transparent; color: var(--danger); border: 1.5px solid var(--danger); padding: 6px 12px; font-size: 0.82rem; }
+  .btn-danger:hover { background: var(--danger); color: white; }
+  .btn-sm { padding: 6px 12px; font-size: 0.82rem; }
+  .btn-ghost { background: transparent; color: var(--text2); border: 1.5px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ===== PAGE HEADER ===== */
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .page-header h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.7rem;
+    color: var(--text);
+  }
+
+  /* ===== GEWERKE ===== */
+  .gewerk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+  .gewerk-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    transition: transform 0.18s, box-shadow 0.18s;
+  }
+  .gewerk-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(42,35,24,0.13); }
+  .gewerk-card .gewerk-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+  }
+  .gewerk-card .gewerk-type {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+  .contact-row { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; margin-bottom: 6px; color: var(--text2); }
+  .contact-row svg { flex-shrink: 0; }
+  .contact-row a { color: var(--accent4); text-decoration: none; }
+  .contact-row a:hover { text-decoration: underline; }
+  .gewerk-actions { display: flex; gap: 8px; margin-top: 14px; }
+  .status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .status-ausstehend { background: #fef3cd; color: #856404; }
+  .status-inplanung { background: #cce5ff; color: #004085; }
+  .status-laufend { background: #d4edda; color: #155724; }
+  .status-abgeschlossen { background: #e2e3e5; color: #383d41; }
+
+  /* ===== CHECKLISTE ===== */
+  .checklist-group { margin-bottom: 20px; }
+  .checklist-group h4 {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    margin-bottom: 7px;
+    transition: all 0.15s;
+  }
+  .check-item.done { opacity: 0.55; }
+  .check-item.done .check-text { text-decoration: line-through; color: var(--text2); }
+  .check-item input[type="checkbox"] {
+    width: 18px; height: 18px;
+    cursor: pointer;
+    accent-color: var(--accent2);
+    flex-shrink: 0;
+    padding: 0;
+    background: none;
+    border: none;
+  }
+  .check-text { flex: 1; font-size: 0.92rem; }
+  .check-prio {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .prio-hoch { background: #fde8e8; color: #c0392b; }
+  .prio-mittel { background: #fef3cd; color: #856404; }
+  .prio-niedrig { background: #d4edda; color: #155724; }
+  .progress-bar-wrap { background: var(--surface2); border-radius: 20px; height: 8px; margin-bottom: 20px; overflow: hidden; }
+  .progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); border-radius: 20px; transition: width 0.4s ease; }
+  .progress-label { font-size: 0.85rem; color: var(--text2); margin-bottom: 8px; }
+
+  /* ===== TERMINE ===== */
+  .timeline { position: relative; padding-left: 30px; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px; top: 0; bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--accent), var(--accent2));
+    border-radius: 2px;
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 18px;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -24px;
+    top: 14px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--surface);
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+  .timeline-item.vergangen::before { background: var(--text2); box-shadow: 0 0 0 2px var(--text2); }
+  .timeline-item.heute::before { background: var(--accent2); box-shadow: 0 0 0 3px var(--accent2); width: 14px; height: 14px; left: -25px; }
+  .timeline-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    box-shadow: var(--shadow);
+  }
+  .timeline-card .t-date { font-size: 0.78rem; font-weight: 600; color: var(--accent); margin-bottom: 3px; }
+  .timeline-card .t-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 3px; }
+  .timeline-card .t-desc { font-size: 0.86rem; color: var(--text2); }
+  .timeline-card .t-gewerk { font-size: 0.75rem; background: var(--surface2); color: var(--text2); padding: 2px 8px; border-radius: 10px; display: inline-block; margin-top: 6px; }
+
+  /* ===== KOSTEN ===== */
+  .kosten-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .kosten-kpi {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+  }
+  .kosten-kpi .kpi-label { font-size: 0.78rem; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .kosten-kpi .kpi-value { font-family: 'DM Serif Display', serif; font-size: 1.7rem; color: var(--text); }
+  .kosten-kpi .kpi-value.danger { color: var(--danger); }
+  .kosten-kpi .kpi-value.success { color: var(--accent2); }
+
+  .kosten-table { width: 100%; border-collapse: collapse; }
+  .kosten-table th {
+    text-align: left;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 10px 12px;
+    background: var(--surface2);
+    border-bottom: 2px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+  }
+  .kosten-table th:hover { color: var(--accent); }
+  .kosten-table td {
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+  }
+  .kosten-table tr:last-child td { border-bottom: none; }
+  .kosten-table tr:hover td { background: var(--surface2); }
+  .kosten-table .betrag { font-weight: 600; text-align: right; }
+  .kosten-table .betrag.offen { color: var(--danger); }
+  .kosten-table .betrag.bezahlt { color: var(--accent2); }
+  .sort-icon { margin-left: 4px; opacity: 0.4; }
+  .sort-icon.active { opacity: 1; color: var(--accent); }
+
+  /* ===== MODALS ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(42,35,24,0.45);
+    backdrop-filter: blur(3px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: 18px;
+    padding: 32px;
+    width: 100%;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(42,35,24,0.25);
+    animation: modalIn 0.22s ease;
+  }
+  @keyframes modalIn { from { transform: translateY(16px) scale(0.97); opacity: 0; } to { transform: none; opacity: 1; } }
+  .modal h3 { font-family: 'DM Serif Display', serif; font-size: 1.4rem; margin-bottom: 22px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; }
+
+  /* ===== MISC ===== */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text2);
+  }
+  .empty-state .empty-icon { font-size: 3rem; margin-bottom: 14px; }
+  .empty-state p { font-size: 1rem; }
+  .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; align-items: center; }
+  .filter-bar select, .filter-bar input { background: var(--surface); max-width: 200px; }
+  .tag { font-size: 0.75rem; font-weight: 600; padding: 3px 9px; border-radius: 10px; background: var(--surface2); color: var(--text2); }
+
+  /* ===== KATEGORIE CHIPS ===== */
+  .kat-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+  .kat-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 12px; border-radius: 20px; cursor: pointer;
+    font-size: 0.82rem; font-weight: 500;
+    background: var(--surface2); color: var(--text2);
+    border: 1.5px solid var(--border);
+    user-select: none; transition: all 0.15s;
+  }
+  .kat-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .kat-chip.selected { background: var(--accent); color: white; border-color: var(--accent); }
+
+  @media (max-width: 600px) {
+    header { padding: 20px; }
+    header h1 { font-size: 1.6rem; }
+    .container { padding: 20px 14px; }
+    nav button { padding: 12px 14px; font-size: 0.85rem; }
+    .form-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div style="flex:1">
+    <div class="subtitle">Euer persönlicher</div>
+    <h1>🏠 Hausbau-Manager</h1>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+    <div id="sync-status" style="font-size:0.82rem;color:#b0a890;display:flex;align-items:center;gap:6px">
+      <span id="sync-dot" style="width:8px;height:8px;border-radius:50%;background:#555;display:inline-block;transition:background 0.3s"></span>
+      <span id="sync-text">Nicht verbunden</span>
+    </div>
+    <button onclick="openModal('settings-modal')" style="background:transparent;border:1px solid #555;color:#b0a890;border-radius:7px;padding:5px 13px;cursor:pointer;font-size:0.82rem;font-family:inherit">⚙️ Sync einrichten</button>
+  </div>
+</header>
+
+<nav>
+  <button class="active" onclick="showSection('gewerke')">🔧 Gewerke</button>
+  <button onclick="showSection('checkliste')">✅ Checkliste</button>
+  <button onclick="showSection('termine')">📅 Termine</button>
+  <button onclick="showSection('kosten')">💶 Kosten</button>
+</nav>
+
+<div class="container">
+
+  <!-- ===== GEWERKE ===== -->
+  <div id="section-gewerke" class="section active">
+    <div class="page-header">
+      <h2>🔧 Gewerke & Kontakte</h2>
+      <button class="btn btn-primary" onclick="openModal('gewerk-modal')">+ Gewerk hinzufügen</button>
+    </div>
+    <div class="filter-bar">
+      <input type="text" id="gewerk-search" placeholder="🔍 Suchen…" oninput="renderGewerke()">
+      <select id="gewerk-filter-status" onchange="renderGewerke()">
+        <option value="">Alle Status</option>
+        <option>Ausstehend</option>
+        <option>In Planung</option>
+        <option>Laufend</option>
+        <option>Abgeschlossen</option>
+      </select>
+    </div>
+    <div id="gewerk-list" class="gewerk-grid"></div>
+  </div>
+
+  <!-- ===== CHECKLISTE ===== -->
+  <div id="section-checkliste" class="section">
+    <div class="page-header">
+      <h2>✅ Checkliste</h2>
+      <button class="btn btn-primary" onclick="openModal('check-modal')">+ Aufgabe hinzufügen</button>
+    </div>
+    <div class="progress-label" id="check-progress-label">0 von 0 erledigt</div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="check-progress-bar" style="width:0%"></div></div>
+    <div id="check-list"></div>
+  </div>
+
+  <!-- ===== TERMINE ===== -->
+  <div id="section-termine" class="section">
+    <div class="page-header">
+      <h2>📅 Termine & Zeitleiste</h2>
+      <button class="btn btn-primary" onclick="openModal('termin-modal')">+ Termin hinzufügen</button>
+    </div>
+    <div id="timeline-list" class="timeline"></div>
+  </div>
+
+  <!-- ===== KOSTEN ===== -->
+  <div id="section-kosten" class="section">
+    <div class="page-header">
+      <h2>💶 Kosten</h2>
+      <button class="btn btn-primary" onclick="openModal('kosten-modal')">+ Kosten eintragen</button>
+    </div>
+    <div class="kosten-summary" id="kosten-summary"></div>
+    <div class="card">
+      <div class="filter-bar" style="margin-bottom:10px">
+        <select id="kosten-sort" onchange="renderKosten()">
+          <option value="datum-desc">📅 Neueste zuerst</option>
+          <option value="datum-asc">📅 Älteste zuerst</option>
+          <option value="betrag-desc">💶 Höchster Betrag</option>
+          <option value="betrag-asc">💶 Niedrigster Betrag</option>
+          <option value="gewerk">🔧 Nach Gewerk</option>
+        </select>
+        <select id="kosten-filter-status" onchange="renderKosten()">
+          <option value="">Alle</option>
+          <option>Bezahlt</option>
+          <option>Offen</option>
+        </select>
+      </div>
+      <div style="margin-bottom:14px">
+        <div style="font-size:0.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px">🔧 Nach Gewerk filtern</div>
+        <div class="kat-chips" id="kosten-filter-gewerk-chips">
+          <span class="kat-chip selected" onclick="toggleKostenFilter(this,'')">Alle</span>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="kosten-table">
+          <thead>
+            <tr>
+              <th>Datum</th>
+              <th>Beschreibung</th>
+              <th>Gewerk</th>
+              <th>Status</th>
+              <th style="text-align:right">Betrag</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="kosten-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- ===== MODALS ===== -->
+
+<!-- Settings / Sync Modal -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal" style="max-width:600px">
+    <h3>⚙️ Cloud-Sync einrichten</h3>
+    <p style="font-size:0.9rem;color:var(--text2);margin-bottom:20px;line-height:1.6">
+      Mit JSONBin.io könnt ihr beide auf dieselben Daten zugreifen – kostenlos, kein Server nötig.
+      Jeder trägt den gleichen API-Key und die gleiche Bin-ID ein.
+    </p>
+
+    <div style="background:var(--surface2);border-radius:10px;padding:16px 18px;margin-bottom:20px;font-size:0.87rem;line-height:1.8;color:var(--text)">
+      <strong>📋 Einmalige Einrichtung (nur eine Person nötig):</strong><br>
+      1. Konto auf <a href="https://jsonbin.io" target="_blank" style="color:var(--accent4)">jsonbin.io</a> erstellen<br>
+      2. Nach Login: oben rechts → <em>API Keys</em> → Key kopieren<br>
+      3. Links → <em>Bins</em> → <em>+ Create Bin</em> → Inhalt: <code style="background:var(--border);padding:1px 5px;border-radius:4px">{}</code> → speichern<br>
+      4. Bin-ID aus der URL kopieren (z.B. <code style="background:var(--border);padding:1px 5px;border-radius:4px">64abc1234...</code>)<br>
+      5. Beides hier eintragen und speichern → Link an Partner schicken, dieser trägt dieselben Daten ein
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>JSONBin API-Key *</label>
+        <input id="cfg-apikey" type="password" placeholder="$2b$10$...">
+        <span style="font-size:0.75rem;color:var(--text2);margin-top:2px">Wird nur lokal in eurem Browser gespeichert</span>
+      </div>
+      <div class="form-group full">
+        <label>Bin-ID *</label>
+        <input id="cfg-binid" type="text" placeholder="64abc1234def567890...">
+      </div>
+    </div>
+
+    <div id="settings-msg" style="margin-top:12px;font-size:0.85rem;min-height:20px"></div>
+
+    <div class="modal-actions" style="flex-wrap:wrap;gap:8px">
+      <button class="btn btn-danger" onclick="clearSyncConfig()" style="margin-right:auto">🗑 Verbindung trennen</button>
+      <button class="btn btn-ghost" onclick="testConnection()">🔌 Verbindung testen</button>
+      <button class="btn btn-ghost" onclick="closeModal('settings-modal')">Abbrechen</button>
+      <button class="btn btn-primary" onclick="saveSyncConfig()">💾 Speichern & verbinden</button>
+    </div>
+  </div>
+</div>
+
+<!-- Gewerk Modal -->
+<div class="modal-overlay" id="gewerk-modal">
+  <div class="modal">
+    <h3 id="gewerk-modal-title">🔧 Gewerk hinzufügen</h3>
+    <input type="hidden" id="gewerk-edit-id">
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Kategorien * <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text2)">(mind. eine, mehrere möglich)</span></label>
+        <div class="kat-chips" id="g-typ-chips"></div>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="g-status">
+          <option>Ausstehend</option><option>In Planung</option><option>Laufend</option><option>Abgeschlossen</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label>Firmenname *</label>
+        <input id="g-firma" type="text" placeholder="Mustermann GmbH">
+      </div>
+      <div class="form-group full">
+        <label>Ansprechpartner</label>
+        <input id="g-name" type="text" placeholder="Max Mustermann">
+      </div>
+      <div class="form-group full">
+        <label>Adresse</label>
+        <input id="g-adresse" type="text" placeholder="Musterstr. 1, 12345 Stadt">
+      </div>
+      <div class="form-group">
+        <label>Telefon (Festnetz)</label>
+        <input id="g-tel" type="tel" placeholder="0123 456789">
+      </div>
+      <div class="form-group">
+        <label>Handy</label>
+        <input id="g-handy" type="tel" placeholder="0170 1234567">
+      </div>
+      <div class="form-group">
+        <label>E-Mail</label>
+        <input id="g-mail" type="email" placeholder="info@firma.de">
+      </div>
+      <div class="form-group full">
+        <label>Notizen</label>
+        <textarea id="g-notiz" placeholder="Angebotsstatus, Besonderheiten…"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('gewerk-modal')">Abbrechen</button>
+      <button class="btn btn-primary" onclick="saveGewerk()">💾 Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Check Modal -->
+<div class="modal-overlay" id="check-modal">
+  <div class="modal">
+    <h3>✅ Aufgabe hinzufügen</h3>
+    <input type="hidden" id="check-edit-id">
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Aufgabe *</label>
+        <input id="c-text" type="text" placeholder="z. B. Bauantrag einreichen">
+      </div>
+      <div class="form-group">
+        <label>Kategorie</label>
+        <select id="c-kat">
+          <option>Behörden & Genehmigungen</option><option>Planung</option>
+          <option>Finanzen</option><option>Bauphasen</option><option>Abnahmen</option><option>Sonstiges</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Priorität</label>
+        <select id="c-prio"><option>Hoch</option><option>Mittel</option><option>Niedrig</option></select>
+      </div>
+      <div class="form-group full">
+        <label>Notiz</label>
+        <textarea id="c-notiz" placeholder="Zusätzliche Infos…"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('check-modal')">Abbrechen</button>
+      <button class="btn btn-primary" onclick="saveCheck()">💾 Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Termin Modal -->
+<div class="modal-overlay" id="termin-modal">
+  <div class="modal">
+    <h3>📅 Termin hinzufügen</h3>
+    <input type="hidden" id="termin-edit-id">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Datum *</label>
+        <input id="t-datum" type="date">
+      </div>
+      <div class="form-group">
+        <label>Uhrzeit</label>
+        <input id="t-uhrzeit" type="time">
+      </div>
+      <div class="form-group full">
+        <label>Titel *</label>
+        <input id="t-titel" type="text" placeholder="z. B. Rohbauabnahme">
+      </div>
+      <div class="form-group full">
+        <label>Gewerk / Bereich</label>
+        <input id="t-gewerk" type="text" placeholder="z. B. Rohbau, Elektro…">
+      </div>
+      <div class="form-group full">
+        <label>Beschreibung</label>
+        <textarea id="t-desc" placeholder="Details zum Termin…"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('termin-modal')">Abbrechen</button>
+      <button class="btn btn-primary" onclick="saveTermin()">💾 Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Kosten Modal -->
+<div class="modal-overlay" id="kosten-modal">
+  <div class="modal">
+    <h3>💶 Kosten eintragen</h3>
+    <input type="hidden" id="kosten-edit-id">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Datum *</label>
+        <input id="k-datum" type="date">
+      </div>
+      <div class="form-group">
+        <label>Betrag (€) *</label>
+        <input id="k-betrag" type="number" min="0" step="0.01" placeholder="0,00">
+      </div>
+      <div class="form-group full">
+        <label>Beschreibung *</label>
+        <input id="k-desc" type="text" placeholder="z. B. Rechnung Elektro">
+      </div>
+      <div class="form-group full">
+        <label>Kategorie / Gewerk <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text2)">(mehrere möglich)</span></label>
+        <div class="kat-chips" id="k-gewerk-chips"></div>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="k-status"><option>Bezahlt</option><option>Offen</option></select>
+      </div>
+      <div class="form-group full">
+        <label>Notiz</label>
+        <textarea id="k-notiz" placeholder="Rechnungsnummer, Details…"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('kosten-modal')">Abbrechen</button>
+      <button class="btn btn-primary" onclick="saveKosten()">💾 Speichern</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+let data = {
+  gewerke: [],
+  checks: [],
+  termine: [],
+  kosten: []
+};
+
+// ===== CLOUD SYNC (JSONBin.io) =====
+let syncConfig = { apiKey: '', binId: '' };
+let syncTimer = null;
+let isSyncing = false;
+
+function loadSyncConfig() {
+  try {
+    const c = localStorage.getItem('hausbau_sync');
+    if(c) syncConfig = JSON.parse(c);
+  } catch(e){}
+}
+
+function saveSyncConfig() {
+  const key = document.getElementById('cfg-apikey').value.trim();
+  const bin = document.getElementById('cfg-binid').value.trim();
+  if(!key || !bin) { showSettingsMsg('Bitte beide Felder ausfüllen.', 'red'); return; }
+  syncConfig = { apiKey: key, binId: bin };
+  localStorage.setItem('hausbau_sync', JSON.stringify(syncConfig));
+  showSettingsMsg('✅ Gespeichert! Verbinde…', 'green');
+  closeModal('settings-modal');
+  loadFromCloud(true);
+}
+
+function clearSyncConfig() {
+  if(!confirm('Sync-Verbindung wirklich trennen? Eure lokalen Daten bleiben erhalten.')) return;
+  syncConfig = { apiKey:'', binId:'' };
+  localStorage.removeItem('hausbau_sync');
+  setSyncStatus('disconnected');
+  closeModal('settings-modal');
+}
+
+function testConnection() {
+  const key = document.getElementById('cfg-apikey').value.trim();
+  const bin = document.getElementById('cfg-binid').value.trim();
+  if(!key||!bin) { showSettingsMsg('Bitte beide Felder ausfüllen.', 'red'); return; }
+  showSettingsMsg('⏳ Teste Verbindung…', '#b0a890');
+  fetch(`https://api.jsonbin.io/v3/b/${bin}/latest`, {
+    headers: { 'X-Master-Key': key }
+  }).then(r => {
+    if(r.ok) showSettingsMsg('✅ Verbindung erfolgreich!', 'green');
+    else showSettingsMsg(`❌ Fehler: ${r.status} – Key oder Bin-ID prüfen.`, 'red');
+  }).catch(()=> showSettingsMsg('❌ Keine Verbindung – Internet prüfen.', 'red'));
+}
+
+function showSettingsMsg(msg, color) {
+  const el = document.getElementById('settings-msg');
+  if(el) { el.textContent = msg; el.style.color = color; }
+}
+
+function setSyncStatus(state, detail='') {
+  const dot = document.getElementById('sync-dot');
+  const txt = document.getElementById('sync-text');
+  if(!dot||!txt) return;
+  const states = {
+    disconnected: { color:'#555', text:'Nicht verbunden' },
+    syncing:      { color:'#f0a500', text:'Synchronisiert…' },
+    ok:           { color:'#4a7c59', text: detail || 'Synchronisiert ✓' },
+    error:        { color:'#c0392b', text: detail || 'Sync-Fehler' }
+  };
+  const s = states[state] || states.disconnected;
+  dot.style.background = s.color;
+  txt.textContent = s.text;
+}
+
+async function loadFromCloud(initial=false) {
+  if(!syncConfig.apiKey || !syncConfig.binId) return;
+  setSyncStatus('syncing');
+  try {
+    const r = await fetch(`https://api.jsonbin.io/v3/b/${syncConfig.binId}/latest`, {
+      headers: { 'X-Master-Key': syncConfig.apiKey }
+    });
+    if(!r.ok) throw new Error(r.status);
+    const json = await r.json();
+    const remote = json.record;
+    if(remote && typeof remote === 'object' && (remote.gewerke||remote.checks||remote.kosten||remote.termine)) {
+      data = {
+        gewerke: remote.gewerke || [],
+        checks:  remote.checks  || [],
+        termine: remote.termine || [],
+        kosten:  remote.kosten  || []
+      };
+      // also keep local backup
+      localStorage.setItem('hausbau', JSON.stringify(data));
+    }
+    const now = new Date().toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'});
+    setSyncStatus('ok', `Sync ✓ ${now}`);
+    if(initial) {
+      renderGewerke(); renderChecks(); renderTermine(); renderKosten();
+    }
+  } catch(e) {
+    setSyncStatus('error', 'Sync-Fehler – offline?');
+  }
+}
+
+async function saveToCloud() {
+  if(!syncConfig.apiKey || !syncConfig.binId) return;
+  if(isSyncing) return;
+  isSyncing = true;
+  setSyncStatus('syncing');
+  try {
+    const r = await fetch(`https://api.jsonbin.io/v3/b/${syncConfig.binId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': syncConfig.apiKey
+      },
+      body: JSON.stringify(data)
+    });
+    if(!r.ok) throw new Error(r.status);
+    const now = new Date().toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'});
+    setSyncStatus('ok', `Gespeichert ✓ ${now}`);
+  } catch(e) {
+    setSyncStatus('error', 'Speichern fehlgeschlagen');
+  } finally {
+    isSyncing = false;
+  }
+}
+
+// Debounced save: wartet 800ms nach letzter Änderung
+function scheduleSave() {
+  localStorage.setItem('hausbau', JSON.stringify(data)); // immer lokal speichern
+  if(syncConfig.apiKey && syncConfig.binId) {
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(() => saveToCloud(), 800);
+  }
+}
+
+// Polling: alle 30 Sek. prüfen ob Partner was geändert hat
+setInterval(() => { if(syncConfig.apiKey && syncConfig.binId) loadFromCloud(); }, 30000);
+
+function load() {
+  loadSyncConfig();
+  try { const d = localStorage.getItem('hausbau'); if(d) data = JSON.parse(d); } catch(e){}
+  // Öffnet Settings-Modal wenn noch kein Sync konfiguriert
+  if(!syncConfig.apiKey || !syncConfig.binId) {
+    setSyncStatus('disconnected');
+  } else {
+    document.getElementById('cfg-apikey').value = syncConfig.apiKey;
+    document.getElementById('cfg-binid').value = syncConfig.binId;
+    loadFromCloud(true);
+  }
+}
+
+function save() {
+  scheduleSave();
+}
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+const KATEGORIEN = ['Rohbau','Dach','Fenster & Türen','Elektro','Sanitär','Heizung',
+  'Fliesen','Maler','Böden','Außenanlagen','Trockenbau','Zimmerei','Estrich','Dämmung','Sonstiges'];
+
+function initChips(containerId, selected=[]) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = KATEGORIEN.map(k => `
+    <span class="kat-chip ${selected.includes(k)?'selected':''}" onclick="toggleChip(this,'${k}')">${k}</span>
+  `).join('');
+}
+function toggleChip(el, val) { el.classList.toggle('selected'); }
+function getSelectedChips(containerId) {
+  return [...document.querySelectorAll(`#${containerId} .kat-chip.selected`)].map(c=>c.dataset.val||c.textContent.trim());
+}
+
+// ===== NAV =====
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if(id==='gewerke') renderGewerke();
+  if(id==='checkliste') renderChecks();
+  if(id==='termine') renderTermine();
+  if(id==='kosten') renderKosten();
+}
+
+// ===== MODALS =====
+function openModal(id) {
+  if(id==='gewerk-modal' && !document.getElementById('gewerk-edit-id').value) {
+    document.getElementById('gewerk-modal-title').textContent = '🔧 Gewerk hinzufügen';
+    initChips('g-typ-chips', []);
+  }
+  if(id==='kosten-modal' && !document.getElementById('kosten-edit-id').value) {
+    initChips('k-gewerk-chips', []);
+    document.getElementById('k-datum').value = new Date().toISOString().slice(0,10);
+  }
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  if(id==='gewerk-modal') document.getElementById('gewerk-edit-id').value = '';
+  if(id==='kosten-modal') document.getElementById('kosten-edit-id').value = '';
+}
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); });
+});
+
+// ===== GEWERKE =====
+function saveGewerk() {
+  const firma = document.getElementById('g-firma').value.trim();
+  const typen = getSelectedChips('g-typ-chips');
+  if(!firma) { alert('Bitte Firmenname eingeben.'); return; }
+  if(!typen.length) { alert('Bitte mindestens eine Kategorie auswählen.'); return; }
+  const editId = document.getElementById('gewerk-edit-id').value;
+  const obj = {
+    id: editId || uid(),
+    typen,
+    status: document.getElementById('g-status').value,
+    firma, name: document.getElementById('g-name').value.trim(),
+    adresse: document.getElementById('g-adresse').value.trim(),
+    tel: document.getElementById('g-tel').value.trim(),
+    handy: document.getElementById('g-handy').value.trim(),
+    mail: document.getElementById('g-mail').value.trim(),
+    notiz: document.getElementById('g-notiz').value.trim()
+  };
+  if(editId) {
+    const i = data.gewerke.findIndex(g=>g.id===editId);
+    if(i>-1) data.gewerke[i] = obj;
+  } else {
+    data.gewerke.push(obj);
+  }
+  save(); closeModal('gewerk-modal'); renderGewerke();
+}
+
+function editGewerk(id) {
+  const g = data.gewerke.find(x=>x.id===id); if(!g) return;
+  document.getElementById('gewerk-modal-title').textContent = '✏️ Gewerk bearbeiten';
+  document.getElementById('gewerk-edit-id').value = g.id;
+  // Rückwärtskompatibilität: altes "typ"-Feld (string) → Array
+  const selected = g.typen || (g.typ ? [g.typ] : []);
+  initChips('g-typ-chips', selected);
+  document.getElementById('g-status').value = g.status;
+  document.getElementById('g-firma').value = g.firma;
+  document.getElementById('g-name').value = g.name;
+  document.getElementById('g-adresse').value = g.adresse;
+  document.getElementById('g-tel').value = g.tel;
+  document.getElementById('g-handy').value = g.handy || '';
+  document.getElementById('g-mail').value = g.mail;
+  document.getElementById('g-notiz').value = g.notiz;
+  openModal('gewerk-modal');
+}
+
+function deleteGewerk(id) {
+  if(!confirm('Gewerk wirklich löschen?')) return;
+  data.gewerke = data.gewerke.filter(g=>g.id!==id);
+  save(); renderGewerke();
+}
+
+function renderGewerke() {
+  const q = document.getElementById('gewerk-search').value.toLowerCase();
+  const fs = document.getElementById('gewerk-filter-status').value;
+  let list = data.gewerke.filter(g => {
+    const typen = g.typen || (g.typ ? [g.typ] : []);
+    const match = !q || g.firma.toLowerCase().includes(q) || typen.some(t=>t.toLowerCase().includes(q)) || g.name.toLowerCase().includes(q);
+    const st = !fs || g.status === fs;
+    return match && st;
+  });
+  const el = document.getElementById('gewerk-list');
+  if(!list.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">🔧</div><p>Noch keine Gewerke eingetragen.<br>Fügt euren ersten Ansprechpartner hinzu!</p></div>`;
+    return;
+  }
+  const statusClass = s => 'status-' + s.toLowerCase().replace(' ','');
+  el.innerHTML = list.map(g => {
+    const typen = g.typen || (g.typ ? [g.typ] : []);
+    return `
+    <div class="gewerk-card">
+      <div class="gewerk-type">${typen.map(t=>`<span style="margin-right:5px">${t}</span>`).join('')}</div>
+      <div class="gewerk-name">${g.firma}</div>
+      <span class="status-badge ${statusClass(g.status)}">${g.status}</span>
+      ${g.name ? `<div class="contact-row">${icon('person')} ${g.name}</div>` : ''}
+      ${g.adresse ? `<div class="contact-row">${icon('pin')} ${g.adresse}</div>` : ''}
+      ${g.tel ? `<div class="contact-row">${icon('phone')} <a href="tel:${g.tel}">${g.tel}</a></div>` : ''}
+      ${g.handy ? `<div class="contact-row">${icon('mobile')} <a href="tel:${g.handy}">${g.handy}</a></div>` : ''}
+      ${g.mail ? `<div class="contact-row">${icon('mail')} <a href="mailto:${g.mail}">${g.mail}</a></div>` : ''}
+      ${g.notiz ? `<div class="contact-row" style="margin-top:8px;font-size:0.83rem;color:var(--text2);font-style:italic">${g.notiz}</div>` : ''}
+      <div class="gewerk-actions">
+        <button class="btn btn-ghost btn-sm" onclick="editGewerk('${g.id}')">✏️ Bearbeiten</button>
+        <button class="btn btn-danger" onclick="deleteGewerk('${g.id}')">🗑</button>
+      </div>
+    </div>
+  `}).join('');
+}
+
+function icon(t) {
+  if(t==='person') return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`;
+  if(t==='pin') return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>`;
+  if(t==='mobile') return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18" r="1"/></svg>`;
+  if(t==='phone') return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 013.09 5.18 2 2 0 015.07 3h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11l-1.27 1.27a16 16 0 006.29 6.29l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>`;
+  if(t==='mail') return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`;
+}
+
+// ===== CHECKLISTE =====
+function saveCheck() {
+  const text = document.getElementById('c-text').value.trim();
+  if(!text) { alert('Bitte Aufgabe eingeben.'); return; }
+  const editId = document.getElementById('check-edit-id').value;
+  const obj = {
+    id: editId || uid(),
+    text, kat: document.getElementById('c-kat').value,
+    prio: document.getElementById('c-prio').value,
+    notiz: document.getElementById('c-notiz').value.trim(),
+    done: false
+  };
+  if(editId) {
+    const i = data.checks.findIndex(c=>c.id===editId);
+    if(i>-1) { obj.done = data.checks[i].done; data.checks[i] = obj; }
+  } else {
+    data.checks.push(obj);
+  }
+  save(); closeModal('check-modal'); clearCheckForm(); renderChecks();
+}
+
+function clearCheckForm() {
+  ['c-text','c-notiz'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('check-edit-id').value = '';
+}
+
+function toggleCheck(id) {
+  const c = data.checks.find(x=>x.id===id); if(!c) return;
+  c.done = !c.done; save(); renderChecks();
+}
+
+function deleteCheck(id) {
+  data.checks = data.checks.filter(c=>c.id!==id); save(); renderChecks();
+}
+
+function renderChecks() {
+  const total = data.checks.length;
+  const done = data.checks.filter(c=>c.done).length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById('check-progress-label').textContent = `${done} von ${total} erledigt (${pct}%)`;
+  document.getElementById('check-progress-bar').style.width = pct + '%';
+
+  const groups = {};
+  data.checks.forEach(c => {
+    if(!groups[c.kat]) groups[c.kat] = [];
+    groups[c.kat].push(c);
+  });
+
+  const prioClass = p => ({ Hoch:'prio-hoch', Mittel:'prio-mittel', Niedrig:'prio-niedrig' }[p]);
+  const el = document.getElementById('check-list');
+  if(!total) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><p>Noch keine Aufgaben eingetragen.</p></div>`;
+    return;
+  }
+
+  el.innerHTML = Object.keys(groups).map(kat => `
+    <div class="checklist-group">
+      <h4>${kat} <span class="tag">${groups[kat].filter(c=>c.done).length}/${groups[kat].length}</span></h4>
+      ${groups[kat].map(c => `
+        <div class="check-item ${c.done?'done':''}">
+          <input type="checkbox" ${c.done?'checked':''} onchange="toggleCheck('${c.id}')">
+          <div class="check-text">
+            <div>${c.text}</div>
+            ${c.notiz ? `<div style="font-size:0.8rem;color:var(--text2);margin-top:3px">${c.notiz}</div>` : ''}
+          </div>
+          <span class="check-prio ${prioClass(c.prio)}">${c.prio}</span>
+          <button class="btn btn-danger" onclick="deleteCheck('${c.id}')">🗑</button>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+// ===== TERMINE =====
+function saveTermin() {
+  const datum = document.getElementById('t-datum').value;
+  const titel = document.getElementById('t-titel').value.trim();
+  if(!datum||!titel) { alert('Bitte Datum und Titel eingeben.'); return; }
+  const editId = document.getElementById('termin-edit-id').value;
+  const obj = {
+    id: editId || uid(),
+    datum, uhrzeit: document.getElementById('t-uhrzeit').value,
+    titel, gewerk: document.getElementById('t-gewerk').value.trim(),
+    desc: document.getElementById('t-desc').value.trim()
+  };
+  if(editId) {
+    const i = data.termine.findIndex(t=>t.id===editId);
+    if(i>-1) data.termine[i] = obj;
+  } else {
+    data.termine.push(obj);
+  }
+  save(); closeModal('termin-modal'); renderTermine();
+}
+
+function deleteTermin(id) {
+  data.termine = data.termine.filter(t=>t.id!==id); save(); renderTermine();
+}
+
+function renderTermine() {
+  const today = new Date().toISOString().slice(0,10);
+  const sorted = [...data.termine].sort((a,b) => a.datum.localeCompare(b.datum));
+  const el = document.getElementById('timeline-list');
+  if(!sorted.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📅</div><p>Noch keine Termine eingetragen.</p></div>`;
+    return;
+  }
+  el.innerHTML = sorted.map(t => {
+    const cls = t.datum < today ? 'vergangen' : t.datum === today ? 'heute' : '';
+    const dateStr = new Date(t.datum + 'T12:00:00').toLocaleDateString('de-DE', {weekday:'short', day:'2-digit', month:'long', year:'numeric'});
+    return `
+      <div class="timeline-item ${cls}">
+        <div class="timeline-card">
+          <div class="t-date">${dateStr}${t.uhrzeit ? ' · ' + t.uhrzeit + ' Uhr' : ''} ${cls==='heute'?'<strong style="color:var(--accent2)">– Heute!</strong>':''} ${cls==='vergangen'?'<span style="opacity:.6">(vergangen)</span>':''}</div>
+          <div class="t-title">${t.titel}</div>
+          ${t.desc ? `<div class="t-desc">${t.desc}</div>` : ''}
+          ${t.gewerk ? `<span class="t-gewerk">🔧 ${t.gewerk}</span>` : ''}
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <button class="btn btn-danger" onclick="deleteTermin('${t.id}')">🗑 Löschen</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ===== KOSTEN =====
+function saveKosten() {
+  const betrag = parseFloat(document.getElementById('k-betrag').value);
+  const desc = document.getElementById('k-desc').value.trim();
+  const datum = document.getElementById('k-datum').value;
+  if(!betrag||!desc||!datum) { alert('Bitte Datum, Beschreibung und Betrag eingeben.'); return; }
+  const editId = document.getElementById('kosten-edit-id').value;
+  const gewerke = getSelectedChips('k-gewerk-chips');
+  const obj = {
+    id: editId || uid(),
+    datum, desc, betrag,
+    gewerke,
+    status: document.getElementById('k-status').value,
+    notiz: document.getElementById('k-notiz').value.trim()
+  };
+  if(editId) {
+    const i = data.kosten.findIndex(k=>k.id===editId);
+    if(i>-1) data.kosten[i] = obj;
+  } else {
+    data.kosten.push(obj);
+  }
+  save(); closeModal('kosten-modal'); renderKosten();
+}
+
+function deleteKosten(id) {
+  data.kosten = data.kosten.filter(k=>k.id!==id); save(); renderKosten();
+}
+
+function initKostenFilterChips() {
+  const el = document.getElementById('kosten-filter-gewerk-chips');
+  el.innerHTML = `<span class="kat-chip selected" data-val="" onclick="toggleKostenFilter(this,'')">Alle</span>` +
+    KATEGORIEN.map(k=>`<span class="kat-chip" data-val="${k}" onclick="toggleKostenFilter(this,'${k}')">${k}</span>`).join('');
+}
+function toggleKostenFilter(chip, val) {
+  const chips = document.querySelectorAll('#kosten-filter-gewerk-chips .kat-chip');
+  if(val==='') {
+    chips.forEach(c=>c.classList.remove('selected'));
+    chip.classList.add('selected');
+  } else {
+    document.querySelector('#kosten-filter-gewerk-chips [data-val=""]').classList.remove('selected');
+    chip.classList.toggle('selected');
+    const anySelected = [...chips].filter(c=>c.dataset.val&&c.classList.contains('selected')).length > 0;
+    if(!anySelected) document.querySelector('#kosten-filter-gewerk-chips [data-val=""]').classList.add('selected');
+  }
+  renderKosten();
+}
+function getKostenFilterGewerke() {
+  const all = document.querySelector('#kosten-filter-gewerk-chips [data-val=""]');
+  if(all && all.classList.contains('selected')) return [];
+  return [...document.querySelectorAll('#kosten-filter-gewerk-chips .kat-chip.selected')].map(c=>c.dataset.val);
+}
+
+function renderKosten() {
+  const sort = document.getElementById('kosten-sort').value;
+  const fs = document.getElementById('kosten-filter-status').value;
+  const fg = getKostenFilterGewerke();
+  let list = data.kosten.filter(k => {
+    const kGewerke = k.gewerke || (k.gewerk ? [k.gewerk] : []);
+    const geMatch = fg.length===0 || fg.some(f => kGewerke.includes(f));
+    return (!fs || k.status===fs) && geMatch;
+  });
+
+  if(sort==='datum-desc') list.sort((a,b)=>b.datum.localeCompare(a.datum));
+  else if(sort==='datum-asc') list.sort((a,b)=>a.datum.localeCompare(b.datum));
+  else if(sort==='betrag-desc') list.sort((a,b)=>b.betrag-a.betrag);
+  else if(sort==='betrag-asc') list.sort((a,b)=>a.betrag-b.betrag);
+  else if(sort==='gewerk') list.sort((a,b)=>{
+    const ag=(a.gewerke||[a.gewerk||'']).join(); const bg=(b.gewerke||[b.gewerk||'']).join();
+    return ag.localeCompare(bg);
+  });
+
+  const total = data.kosten.reduce((s,k)=>s+k.betrag,0);
+  const bezahlt = data.kosten.filter(k=>k.status==='Bezahlt').reduce((s,k)=>s+k.betrag,0);
+  const offen = total - bezahlt;
+
+  document.getElementById('kosten-summary').innerHTML = `
+    <div class="kosten-kpi"><div class="kpi-label">Gesamtkosten</div><div class="kpi-value">${fmt(total)}</div></div>
+    <div class="kosten-kpi"><div class="kpi-label">Bezahlt</div><div class="kpi-value success">${fmt(bezahlt)}</div></div>
+    <div class="kosten-kpi"><div class="kpi-label">Offen</div><div class="kpi-value ${offen>0?'danger':''}">${fmt(offen)}</div></div>
+    <div class="kosten-kpi"><div class="kpi-label">Einträge</div><div class="kpi-value">${data.kosten.length}</div></div>
+  `;
+
+  const tbody = document.getElementById('kosten-tbody');
+  if(!list.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text2)">Keine Einträge gefunden.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map(k => {
+    const kGewerke = k.gewerke || (k.gewerk ? [k.gewerk] : []);
+    const geTag = kGewerke.length ? kGewerke.map(g=>`<span class="tag" style="margin-right:3px">🔧 ${g}</span>`).join('') : '—';
+    return `
+    <tr>
+      <td>${new Date(k.datum+'T12:00:00').toLocaleDateString('de-DE')}</td>
+      <td>
+        <div style="font-weight:500">${k.desc}</div>
+        ${k.notiz ? `<div style="font-size:0.8rem;color:var(--text2)">${k.notiz}</div>` : ''}
+      </td>
+      <td>${geTag}</td>
+      <td><span class="status-badge ${k.status==='Bezahlt'?'status-abgeschlossen':'status-ausstehend'}">${k.status}</span></td>
+      <td class="betrag ${k.status==='Offen'?'offen':'bezahlt'}">${fmt(k.betrag)}</td>
+      <td><button class="btn btn-danger" onclick="deleteKosten('${k.id}')">🗑</button></td>
+    </tr>
+  `}).join('');
+}
+
+function fmt(n) { return n.toLocaleString('de-DE',{style:'currency',currency:'EUR'}); }
+
+// ===== INIT =====
+load();
+renderGewerke();
+initKostenFilterChips();
+
+// Set today as default date
+['t-datum','k-datum'].forEach(id => {
+  document.getElementById(id).value = new Date().toISOString().slice(0,10);
+});
+
+// Reset modals on open
+document.getElementById('gewerk-modal').addEventListener('click', function(){});
+</script>
+</body>
+</html>
