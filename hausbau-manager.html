@@ -392,6 +392,33 @@
   .kat-chip:hover { border-color: var(--accent); color: var(--accent); }
   .kat-chip.selected { background: var(--accent); color: white; border-color: var(--accent); }
 
+  /* ===== KANBAN ===== */
+  .kanban-board { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; align-items: start; }
+  .kanban-col { background: var(--surface2); border-radius: var(--radius); padding: 14px; border: 1px solid var(--border); }
+  .kanban-col-title { font-size: 0.8rem; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center; }
+  .kanban-card { background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 12px 14px; margin-bottom: 8px; box-shadow: var(--shadow); cursor:pointer; transition: transform 0.15s; }
+  .kanban-card:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(42,35,24,0.13); }
+  .kanban-card.done-card { opacity: 0.5; }
+  .kanban-card .kc-title { font-size: 0.9rem; font-weight: 500; margin-bottom: 6px; }
+  .kanban-card .kc-title.done-text { text-decoration: line-through; color: var(--text2); }
+  .kanban-card .kc-meta { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+
+  /* ===== GANTT ===== */
+  .gantt-wrap { overflow-x: auto; }
+  .gantt-table { width: 100%; border-collapse: collapse; min-width: 700px; }
+  .gantt-table th { background: var(--surface2); font-size: 0.72rem; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.4px; padding: 8px 10px; border-bottom: 2px solid var(--border); white-space: nowrap; }
+  .gantt-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); font-size: 0.85rem; vertical-align: middle; }
+  .gantt-table tr:hover td { background: var(--surface2); }
+  .gantt-label { white-space: nowrap; font-weight: 500; max-width: 160px; overflow:hidden; text-overflow:ellipsis; }
+  .gantt-bar-cell { position:relative; height: 32px; }
+  .gantt-bar { position:absolute; height: 20px; top: 6px; border-radius: 6px; background: linear-gradient(90deg, var(--accent), var(--accent2)); min-width: 8px; display:flex; align-items:center; padding: 0 6px; font-size: 0.7rem; color: white; font-weight: 600; white-space:nowrap; overflow:hidden; }
+  .gantt-bar.vergangen { background: linear-gradient(90deg, #888, #aaa); }
+  .gantt-bar.heute { background: linear-gradient(90deg, var(--accent2), #2d5e40); box-shadow: 0 0 0 2px var(--accent2); }
+  .gantt-today-line { position:absolute; top:0; bottom:0; width:2px; background: var(--danger); opacity:0.7; z-index:2; }
+  .gantt-month-header { display:flex; border-bottom: 1px solid var(--border); margin-bottom:0; }
+  .gantt-month-cell { font-size:0.75rem; font-weight:600; color:var(--text2); padding:5px 0; text-align:center; border-right:1px solid var(--border); }
+  .gantt-point-marker { position:absolute; top:10px; width:12px; height:12px; border-radius:50%; background:var(--accent); border:2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+
   @media (max-width: 600px) {
     header { padding: 20px; }
     header h1 { font-size: 1.6rem; }
@@ -449,7 +476,13 @@
   <div id="section-checkliste" class="section">
     <div class="page-header">
       <h2>✅ Checkliste</h2>
-      <button class="btn btn-primary" onclick="openModal('check-modal')">+ Aufgabe hinzufügen</button>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div style="display:flex;border:1.5px solid var(--border);border-radius:8px;overflow:hidden">
+          <button id="check-view-list" onclick="setCheckView('list')" style="padding:7px 14px;border:none;background:var(--accent);color:white;cursor:pointer;font-family:inherit;font-size:0.85rem;font-weight:600">☰ Liste</button>
+          <button id="check-view-kanban" onclick="setCheckView('kanban')" style="padding:7px 14px;border:none;background:var(--surface);color:var(--text2);cursor:pointer;font-family:inherit;font-size:0.85rem;font-weight:600">⬜ Kanban</button>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('check-modal')">+ Aufgabe hinzufügen</button>
+      </div>
     </div>
     <div class="progress-label" id="check-progress-label">0 von 0 erledigt</div>
     <div class="progress-bar-wrap"><div class="progress-bar" id="check-progress-bar" style="width:0%"></div></div>
@@ -460,9 +493,16 @@
   <div id="section-termine" class="section">
     <div class="page-header">
       <h2>📅 Termine & Zeitleiste</h2>
-      <button class="btn btn-primary" onclick="openModal('termin-modal')">+ Termin hinzufügen</button>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div style="display:flex;border:1.5px solid var(--border);border-radius:8px;overflow:hidden">
+          <button id="termin-view-timeline" onclick="setTerminView('timeline')" style="padding:7px 14px;border:none;background:var(--accent);color:white;cursor:pointer;font-family:inherit;font-size:0.85rem;font-weight:600">📋 Liste</button>
+          <button id="termin-view-gantt" onclick="setTerminView('gantt')" style="padding:7px 14px;border:none;background:var(--surface);color:var(--text2);cursor:pointer;font-family:inherit;font-size:0.85rem;font-weight:600">📊 Gantt</button>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('termin-modal')">+ Termin hinzufügen</button>
+      </div>
     </div>
     <div id="timeline-list" class="timeline"></div>
+    <div id="gantt-container" style="display:none"></div>
   </div>
 
   <!-- ===== KOSTEN ===== -->
@@ -611,7 +651,7 @@
 <!-- Check Modal -->
 <div class="modal-overlay" id="check-modal">
   <div class="modal">
-    <h3>✅ Aufgabe hinzufügen</h3>
+    <h3 id="check-modal-title">✅ Aufgabe hinzufügen</h3>
     <input type="hidden" id="check-edit-id">
     <div class="form-grid">
       <div class="form-group full">
@@ -644,12 +684,16 @@
 <!-- Termin Modal -->
 <div class="modal-overlay" id="termin-modal">
   <div class="modal">
-    <h3>📅 Termin hinzufügen</h3>
+    <h3 id="termin-modal-title">📅 Termin hinzufügen</h3>
     <input type="hidden" id="termin-edit-id">
     <div class="form-grid">
       <div class="form-group">
-        <label>Datum *</label>
+        <label>Startdatum *</label>
         <input id="t-datum" type="date">
+      </div>
+      <div class="form-group">
+        <label>Enddatum <span style="font-weight:400;color:var(--text2)">(für Gantt)</span></label>
+        <input id="t-datum-end" type="date">
       </div>
       <div class="form-group">
         <label>Uhrzeit</label>
@@ -870,7 +914,7 @@ function save() {
 }
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
-const KATEGORIEN = ['Rohbau','Dach','Fenster & Türen','Elektro','Sanitär','Heizung',
+const KATEGORIEN = ['Planung','Abriss','Rohbau','Dach','Fenster & Türen','Elektro','Sanitär','Heizung',
   'Fliesen','Maler','Böden','Außenanlagen','Trockenbau','Zimmerei','Estrich','Dämmung','Sonstiges'];
 
 function initChips(containerId, selected=[]) {
@@ -912,6 +956,8 @@ function closeModal(id) {
   document.getElementById(id).classList.remove('open');
   if(id==='gewerk-modal') document.getElementById('gewerk-edit-id').value = '';
   if(id==='kosten-modal') document.getElementById('kosten-edit-id').value = '';
+  if(id==='check-modal') clearCheckForm();
+  if(id==='termin-modal') { document.getElementById('termin-edit-id').value=''; document.getElementById('termin-modal-title').textContent='📅 Termin hinzufügen'; }
 }
 document.querySelectorAll('.modal-overlay').forEach(m => {
   m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); });
@@ -942,6 +988,12 @@ function saveGewerk() {
     data.gewerke.push(obj);
   }
   save(); closeModal('gewerk-modal'); renderGewerke();
+  // Felder leeren für nächsten Eintrag
+  if(!editId) {
+    ['g-firma','g-name','g-adresse','g-tel','g-handy','g-mail','g-notiz'].forEach(id => document.getElementById(id).value='');
+    initChips('g-typ-chips',[]);
+    document.getElementById('g-status').value = 'Ausstehend';
+  }
 }
 
 function editGewerk(id) {
@@ -1013,6 +1065,16 @@ function icon(t) {
 }
 
 // ===== CHECKLISTE =====
+let checkView = 'list';
+function setCheckView(v) {
+  checkView = v;
+  document.getElementById('check-view-list').style.background = v==='list' ? 'var(--accent)' : 'var(--surface)';
+  document.getElementById('check-view-list').style.color = v==='list' ? 'white' : 'var(--text2)';
+  document.getElementById('check-view-kanban').style.background = v==='kanban' ? 'var(--accent)' : 'var(--surface)';
+  document.getElementById('check-view-kanban').style.color = v==='kanban' ? 'white' : 'var(--text2)';
+  renderChecks();
+}
+
 function saveCheck() {
   const text = document.getElementById('c-text').value.trim();
   if(!text) { alert('Bitte Aufgabe eingeben.'); return; }
@@ -1033,9 +1095,21 @@ function saveCheck() {
   save(); closeModal('check-modal'); clearCheckForm(); renderChecks();
 }
 
+function editCheck(id) {
+  const c = data.checks.find(x=>x.id===id); if(!c) return;
+  document.getElementById('check-modal-title').textContent = '✏️ Aufgabe bearbeiten';
+  document.getElementById('check-edit-id').value = c.id;
+  document.getElementById('c-text').value = c.text;
+  document.getElementById('c-kat').value = c.kat;
+  document.getElementById('c-prio').value = c.prio;
+  document.getElementById('c-notiz').value = c.notiz || '';
+  openModal('check-modal');
+}
+
 function clearCheckForm() {
   ['c-text','c-notiz'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('check-edit-id').value = '';
+  document.getElementById('check-modal-title').textContent = '✅ Aufgabe hinzufügen';
 }
 
 function toggleCheck(id) {
@@ -1053,20 +1127,19 @@ function renderChecks() {
   const pct = total ? Math.round(done/total*100) : 0;
   document.getElementById('check-progress-label').textContent = `${done} von ${total} erledigt (${pct}%)`;
   document.getElementById('check-progress-bar').style.width = pct + '%';
-
-  const groups = {};
-  data.checks.forEach(c => {
-    if(!groups[c.kat]) groups[c.kat] = [];
-    groups[c.kat].push(c);
-  });
-
-  const prioClass = p => ({ Hoch:'prio-hoch', Mittel:'prio-mittel', Niedrig:'prio-niedrig' }[p]);
   const el = document.getElementById('check-list');
   if(!total) {
     el.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><p>Noch keine Aufgaben eingetragen.</p></div>`;
     return;
   }
+  if(checkView === 'kanban') { renderKanban(el); return; }
+  renderCheckList(el);
+}
 
+function renderCheckList(el) {
+  const groups = {};
+  data.checks.forEach(c => { if(!groups[c.kat]) groups[c.kat]=[]; groups[c.kat].push(c); });
+  const prioClass = p => ({ Hoch:'prio-hoch', Mittel:'prio-mittel', Niedrig:'prio-niedrig' }[p]);
   el.innerHTML = Object.keys(groups).map(kat => `
     <div class="checklist-group">
       <h4>${kat} <span class="tag">${groups[kat].filter(c=>c.done).length}/${groups[kat].length}</span></h4>
@@ -1078,6 +1151,7 @@ function renderChecks() {
             ${c.notiz ? `<div style="font-size:0.8rem;color:var(--text2);margin-top:3px">${c.notiz}</div>` : ''}
           </div>
           <span class="check-prio ${prioClass(c.prio)}">${c.prio}</span>
+          <button class="btn btn-ghost btn-sm" onclick="editCheck('${c.id}')">✏️</button>
           <button class="btn btn-danger" onclick="deleteCheck('${c.id}')">🗑</button>
         </div>
       `).join('')}
@@ -1085,7 +1159,54 @@ function renderChecks() {
   `).join('');
 }
 
+function renderKanban(el) {
+  const prioClass = p => ({ Hoch:'prio-hoch', Mittel:'prio-mittel', Niedrig:'prio-niedrig' }[p]);
+  const cols = [
+    { key:'offen',  label:'📋 Offen',      items: data.checks.filter(c=>!c.done) },
+    { key:'erledigt', label:'✅ Erledigt',  items: data.checks.filter(c=>c.done) }
+  ];
+  // Group open items by category for richer kanban
+  const kats = [...new Set(data.checks.map(c=>c.kat))];
+  const kanbanCols = kats.map(kat => ({
+    label: kat,
+    open: data.checks.filter(c=>c.kat===kat&&!c.done),
+    done: data.checks.filter(c=>c.kat===kat&&c.done)
+  }));
+  el.innerHTML = `<div class="kanban-board">` + kanbanCols.map(col => `
+    <div class="kanban-col">
+      <div class="kanban-col-title">
+        <span>${col.label}</span>
+        <span class="tag">${col.done.length}/${col.open.length+col.done.length}</span>
+      </div>
+      ${[...col.open,...col.done].map(c=>`
+        <div class="kanban-card ${c.done?'done-card':''}" onclick="toggleCheck('${c.id}')">
+          <div class="kc-title ${c.done?'done-text':''}">${c.text}</div>
+          ${c.notiz?`<div style="font-size:0.78rem;color:var(--text2);margin-bottom:6px">${c.notiz}</div>`:''}
+          <div class="kc-meta">
+            <span class="check-prio ${prioClass(c.prio)}">${c.prio}</span>
+            <button class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:0.75rem" onclick="event.stopPropagation();editCheck('${c.id}')">✏️</button>
+            <button class="btn btn-danger" style="padding:2px 8px;font-size:0.75rem" onclick="event.stopPropagation();deleteCheck('${c.id}')">🗑</button>
+          </div>
+        </div>
+      `).join('')}
+      ${col.open.length===0&&col.done.length>0?'<div style="text-align:center;font-size:0.8rem;color:var(--accent2);padding:8px">Alles erledigt 🎉</div>':''}
+    </div>
+  `).join('') + `</div>`;
+}
+
 // ===== TERMINE =====
+let terminView = 'timeline';
+function setTerminView(v) {
+  terminView = v;
+  document.getElementById('termin-view-timeline').style.background = v==='timeline' ? 'var(--accent)' : 'var(--surface)';
+  document.getElementById('termin-view-timeline').style.color = v==='timeline' ? 'white' : 'var(--text2)';
+  document.getElementById('termin-view-gantt').style.background = v==='gantt' ? 'var(--accent)' : 'var(--surface)';
+  document.getElementById('termin-view-gantt').style.color = v==='gantt' ? 'white' : 'var(--text2)';
+  document.getElementById('timeline-list').style.display = v==='timeline' ? '' : 'none';
+  document.getElementById('gantt-container').style.display = v==='gantt' ? '' : 'none';
+  renderTermine();
+}
+
 function saveTermin() {
   const datum = document.getElementById('t-datum').value;
   const titel = document.getElementById('t-titel').value.trim();
@@ -1093,7 +1214,9 @@ function saveTermin() {
   const editId = document.getElementById('termin-edit-id').value;
   const obj = {
     id: editId || uid(),
-    datum, uhrzeit: document.getElementById('t-uhrzeit').value,
+    datum,
+    datumEnd: document.getElementById('t-datum-end').value,
+    uhrzeit: document.getElementById('t-uhrzeit').value,
     titel, gewerk: document.getElementById('t-gewerk').value.trim(),
     desc: document.getElementById('t-desc').value.trim()
   };
@@ -1103,14 +1226,34 @@ function saveTermin() {
   } else {
     data.termine.push(obj);
   }
-  save(); closeModal('termin-modal'); renderTermine();
+  save(); closeModal('termin-modal');
+  ['t-datum','t-datum-end','t-uhrzeit','t-titel','t-gewerk','t-desc'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('t-datum').value = new Date().toISOString().slice(0,10);
+  document.getElementById('termin-edit-id').value='';
+  renderTermine();
 }
 
 function deleteTermin(id) {
   data.termine = data.termine.filter(t=>t.id!==id); save(); renderTermine();
 }
 
+function editTermin(id) {
+  const t = data.termine.find(x=>x.id===id); if(!t) return;
+  document.getElementById('termin-modal-title').textContent = '✏️ Termin bearbeiten';
+  document.getElementById('termin-edit-id').value = t.id;
+  document.getElementById('t-datum').value = t.datum;
+  document.getElementById('t-datum-end').value = t.datumEnd||'';
+  document.getElementById('t-uhrzeit').value = t.uhrzeit||'';
+  document.getElementById('t-titel').value = t.titel;
+  document.getElementById('t-gewerk').value = t.gewerk||'';
+  document.getElementById('t-desc').value = t.desc||'';
+  openModal('termin-modal');
+}
+
 function renderTermine() {
+  if(terminView==='gantt') { renderGantt(); return; }
   const today = new Date().toISOString().slice(0,10);
   const sorted = [...data.termine].sort((a,b) => a.datum.localeCompare(b.datum));
   const el = document.getElementById('timeline-list');
@@ -1121,20 +1264,111 @@ function renderTermine() {
   el.innerHTML = sorted.map(t => {
     const cls = t.datum < today ? 'vergangen' : t.datum === today ? 'heute' : '';
     const dateStr = new Date(t.datum + 'T12:00:00').toLocaleDateString('de-DE', {weekday:'short', day:'2-digit', month:'long', year:'numeric'});
+    const endStr = t.datumEnd ? ' – ' + new Date(t.datumEnd+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'short'}) : '';
     return `
       <div class="timeline-item ${cls}">
         <div class="timeline-card">
-          <div class="t-date">${dateStr}${t.uhrzeit ? ' · ' + t.uhrzeit + ' Uhr' : ''} ${cls==='heute'?'<strong style="color:var(--accent2)">– Heute!</strong>':''} ${cls==='vergangen'?'<span style="opacity:.6">(vergangen)</span>':''}</div>
+          <div class="t-date">${dateStr}${endStr}${t.uhrzeit ? ' · ' + t.uhrzeit + ' Uhr' : ''} ${cls==='heute'?'<strong style="color:var(--accent2)">– Heute!</strong>':''} ${cls==='vergangen'?'<span style="opacity:.6">(vergangen)</span>':''}</div>
           <div class="t-title">${t.titel}</div>
           ${t.desc ? `<div class="t-desc">${t.desc}</div>` : ''}
           ${t.gewerk ? `<span class="t-gewerk">🔧 ${t.gewerk}</span>` : ''}
           <div style="margin-top:10px;display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" onclick="editTermin('${t.id}')">✏️ Bearbeiten</button>
             <button class="btn btn-danger" onclick="deleteTermin('${t.id}')">🗑 Löschen</button>
           </div>
         </div>
       </div>
     `;
   }).join('');
+}
+
+function renderGantt() {
+  const el = document.getElementById('gantt-container');
+  const sorted = [...data.termine].sort((a,b)=>a.datum.localeCompare(b.datum));
+  if(!sorted.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📊</div><p>Noch keine Termine für Gantt-Ansicht.<br>Fügt Termine mit Start- und Enddatum hinzu.</p></div>`;
+    return;
+  }
+  const today = new Date().toISOString().slice(0,10);
+  // Zeitspanne berechnen
+  const allDates = sorted.flatMap(t=>[t.datum, t.datumEnd||t.datum]);
+  const minDate = new Date(allDates.reduce((a,b)=>a<b?a:b)+'T12:00:00');
+  const maxDate = new Date(allDates.reduce((a,b)=>a>b?a:b)+'T12:00:00');
+  // Mindestens 30 Tage anzeigen
+  const span = Math.max(30, Math.ceil((maxDate-minDate)/(1000*60*60*24))+7);
+  const startDate = new Date(minDate); startDate.setDate(startDate.getDate()-3);
+  const totalDays = span + 6;
+
+  const dayPct = (dateStr) => {
+    const d = new Date(dateStr+'T12:00:00');
+    return Math.max(0, Math.min(100, (d-startDate)/(totalDays*86400000)*100));
+  };
+  const todayPct = dayPct(today);
+
+  // Monats-Header
+  const months = [];
+  let cur = new Date(startDate);
+  while(cur <= new Date(startDate.getTime()+totalDays*86400000)) {
+    const m = cur.toLocaleDateString('de-DE',{month:'short',year:'2-digit'});
+    if(!months.length || months[months.length-1].label !== m) {
+      months.push({ label: m, pct: dayPct(cur.toISOString().slice(0,10)), days: 0 });
+    }
+    months[months.length-1].days++;
+    cur.setDate(cur.getDate()+1);
+  }
+
+  el.innerHTML = `
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:0.8rem;color:var(--text2)">📊 Gantt-Diagramm · <strong>${sorted.length}</strong> Termine</span>
+        <span style="font-size:0.78rem;background:#fde8e8;color:var(--danger);padding:2px 8px;border-radius:10px">▸ Heute</span>
+        <span style="font-size:0.78rem;background:linear-gradient(90deg,var(--accent),var(--accent2));color:white;padding:2px 8px;border-radius:10px">Zeitraum</span>
+        <span style="font-size:0.78rem;background:#ddd;color:#666;padding:2px 8px;border-radius:10px">Vergangen</span>
+      </div>
+      <div class="gantt-wrap" style="padding:0 20px 20px">
+        <table class="gantt-table">
+          <thead>
+            <tr>
+              <th style="width:160px">Termin</th>
+              <th style="width:80px">Von</th>
+              <th style="width:80px">Bis</th>
+              <th>
+                <div style="position:relative;height:20px">
+                  ${months.map(m=>`<span class="gantt-month-cell" style="position:absolute;left:${m.pct}%;font-size:0.7rem;color:var(--text2)">${m.label}</span>`).join('')}
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            ${sorted.map(t => {
+              const endDate = t.datumEnd || t.datum;
+              const left = dayPct(t.datum);
+              const right = dayPct(endDate);
+              const width = Math.max(0.5, right - left);
+              const isPoint = !t.datumEnd;
+              const cls = t.datum < today ? 'vergangen' : t.datum === today || (t.datum <= today && endDate >= today) ? 'heute' : '';
+              const startFmt = new Date(t.datum+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+              const endFmt = t.datumEnd ? new Date(t.datumEnd+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}) : '—';
+              return `<tr>
+                <td class="gantt-label" title="${t.titel}">${t.gewerk?`<span style="font-size:0.72rem;color:var(--accent);display:block">${t.gewerk}</span>`:''}${t.titel}</td>
+                <td style="font-size:0.78rem;color:var(--text2);white-space:nowrap">${startFmt}</td>
+                <td style="font-size:0.78rem;color:var(--text2);white-space:nowrap">${endFmt}</td>
+                <td class="gantt-bar-cell">
+                  <div style="position:absolute;inset:0">
+                    <div class="gantt-today-line" style="left:${todayPct}%"></div>
+                    ${isPoint
+                      ? `<div class="gantt-point-marker ${cls}" style="left:calc(${left}% - 6px)"></div>`
+                      : `<div class="gantt-bar ${cls}" style="left:${left}%;width:${width}%">${width>8?t.titel:''}</div>`
+                    }
+                  </div>
+                </td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
 }
 
 // ===== KOSTEN =====
